@@ -4,6 +4,20 @@ A real-time IoT anomaly detection pipeline using Apache Kafka, Apache Flink, Tim
 
 > **Note:** This project uses [Redpanda](https://redpanda.com/) as the message broker, which is a Kafka-compatible streaming platform. Throughout the documentation, we refer to it as "Kafka" since they are API-compatible.
 
+## Screenshots
+
+### Real-time Alerts Dashboard
+![Real-time Alerts Using WebSockets](screenshots/4.%20Realtime%20Alerts%20Using%20Websockets.png)
+
+### Apache Flink Dashboard
+| Dashboard Overview | Running Jobs |
+|:------------------:|:------------:|
+| ![Flink Dashboard](screenshots/1.%20Apache%20Flink%20Dashboard.png) | ![Running Jobs](screenshots/2.%20Apache%20Flink%20Running%20Jobs.png) |
+
+| Task Managers |
+|:-------------:|
+| ![Task Managers](screenshots/3.%20Apache%20Flink%20Task%20Managers.png) |
+
 ## Architecture
 
 ```

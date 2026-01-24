@@ -1,3 +1,33 @@
+/**
+ * Bulk insert anomaly events to TimescaleDB.
+ * @param {Array} rows - Array of anomaly row objects
+ */
+export async function bulkInsertToTimescaleAnomalies(rows) {
+  if (rows.length === 0) return;
+  // Each row: asset_id, type, severity, ts, current_temperature, baseline_temperature, distance_from_route_km, lat, lon
+  const values = rows
+    .map(
+      (_, i) =>
+        `($${i * 9 + 1}, $${i * 9 + 2}, $${i * 9 + 3}, to_timestamp($${i * 9 + 4}::bigint / 1000.0), $${i * 9 + 5}, $${i * 9 + 6}, $${i * 9 + 7}, $${i * 9 + 8}, $${i * 9 + 9})`
+    )
+    .join(",");
+  const params = rows.flatMap((r) => [
+    r.asset_id,
+    r.type,
+    r.severity,
+    // Convert Date to epoch milliseconds for to_timestamp()
+    r.ts instanceof Date ? r.ts.getTime() : r.ts,
+    r.current_temperature,
+    r.baseline_temperature,
+    r.distance_from_route_km,
+    r.lat,
+    r.lon,
+  ]);
+  await pool.query(
+    `INSERT INTO iot_anomalies(asset_id, type, severity, ts, current_temperature, baseline_temperature, distance_from_route_km, lat, lon) VALUES ${values} ON CONFLICT (asset_id, type, ts) DO NOTHING;`,
+    params
+  );
+}
 import pg from "pg";
 
 // PostgreSQL/TimescaleDB connection pool singleton

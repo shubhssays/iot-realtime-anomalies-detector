@@ -52,13 +52,57 @@ pids/
 docker/data/
 docker/logs/
 
-# Java/Flink specific
+# Java/Maven specific
 *.class
 *.jar
 *.war
 *.ear
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
 .gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Maven local repository (if stored locally)
 .m2/
+
+# Apache Flink specific
+flink-debug.log
+flink-*.pid
+*.savepoint
+*.checkpoint
+/checkpoints/
+/savepoints/
+hs_err_pid*
+
+# IntelliJ IDEA (additional)
+*.iml
+*.ipr
+*.iws
+.idea/
+out/
+
+# Eclipse (additional)
+.metadata/
+bin/
+*.launch
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
 
 # Temporary files
 tmp/

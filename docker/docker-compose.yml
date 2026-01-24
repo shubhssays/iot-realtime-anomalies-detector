@@ -1,3 +1,5 @@
+name: iot-realtime-anomalies-detector
+
 services:
 
   # --------------------
@@ -19,10 +21,16 @@ services:
       - --node-id
       - "0"
       - --check=false
+      - --kafka-addr
+      - PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
+      - --advertise-kafka-addr
+      - PLAINTEXT://redpanda:29092,OUTSIDE://localhost:9092
     ports:
       - "9092:9092"   # Kafka API
       - "9644:9644"   # Admin
       - "8082:8082"   # HTTP proxy
+    networks:
+      - iot-network
 
   # --------------------
   # Apache Flink
@@ -35,6 +43,8 @@ services:
     command: jobmanager
     environment:
       - JOB_MANAGER_RPC_ADDRESS=jobmanager
+    networks:
+      - iot-network
 
   taskmanager:
     image: flink:1.18
@@ -44,6 +54,9 @@ services:
     command: taskmanager
     environment:
       - JOB_MANAGER_RPC_ADDRESS=jobmanager
+      - TASK_MANAGER_NUMBER_OF_TASK_SLOTS=4
+    networks:
+      - iot-network
 
   # --------------------
   # TimescaleDB (Postgres)
@@ -59,6 +72,8 @@ services:
       POSTGRES_DB: telemetry
     volumes:
       - timescaledb_data:/var/lib/postgresql/data
+    networks:
+      - iot-network
 
   # --------------------
   # ClickHouse
@@ -75,6 +90,12 @@ services:
      CLICKHOUSE_DB: telemetry  
     volumes:
       - clickhouse_data:/var/lib/clickhouse
+    networks:
+      - iot-network
+
+networks:
+  iot-network:
+    driver: bridge
 
 volumes:
   clickhouse_data:

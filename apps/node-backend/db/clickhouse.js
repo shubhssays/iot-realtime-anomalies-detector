@@ -1,3 +1,25 @@
+/**
+ * Bulk insert anomaly events to ClickHouse.
+ * @param {Array} rows - Array of anomaly row objects
+ */
+export async function bulkInsertToClickHouseAnomalies(rows) {
+  if (rows.length === 0) return;
+
+  // Transform rows for ClickHouse DateTime64(3) format and add version
+  const clickhouseRows = rows.map(row => ({
+    ...row,
+    // Convert Date to epoch milliseconds for DateTime64(3)
+    ts: row.ts instanceof Date ? row.ts.getTime() : row.ts,
+    // Add version field required by ReplacingMergeTree (use timestamp as version)
+    version: row.ts instanceof Date ? row.ts.getTime() : Date.now(),
+  }));
+
+  await clickhouse.insert({
+    table: "iot_anomalies",
+    values: clickhouseRows,
+    format: "JSONEachRow",
+  });
+}
 import { createClient } from "@clickhouse/client";
 
 // ClickHouse client singleton

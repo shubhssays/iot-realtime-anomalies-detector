@@ -75,6 +75,27 @@ async function createClickHouseDBTables() {
 
     console.log("Telemetry table created successfully");
 
+    // Create iot_anomalies table (analytics)
+    await client.command({
+      query: `
+        CREATE TABLE IF NOT EXISTS iot_anomalies (
+          asset_id String,
+          type LowCardinality(String),
+          severity LowCardinality(String),
+          ts DateTime64(3),
+          current_temperature Float32,
+          baseline_temperature Float32,
+          distance_from_route_km Float32,
+          lat Float64,
+          lon Float64,
+          version UInt64
+        ) ENGINE = ReplacingMergeTree(version)
+        PARTITION BY toYYYYMM(ts)
+        ORDER BY (asset_id, ts)
+      `,
+    });
+    console.log("iot_anomalies table created successfully");
+
     // Verify table creation
     const result = await client.query({
       query: "SHOW TABLES",

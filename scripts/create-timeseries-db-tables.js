@@ -57,6 +57,36 @@ async function createTimeSeriesDBTables() {
         `);
       console.log("Telemetry table created");
 
+      // Create iot_anomalies table (operational truth)
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS iot_anomalies (
+          asset_id TEXT NOT NULL,
+          type TEXT NOT NULL,
+          severity TEXT NOT NULL,
+          ts TIMESTAMPTZ NOT NULL,
+          current_temperature DOUBLE PRECISION,
+          baseline_temperature DOUBLE PRECISION,
+          distance_from_route_km DOUBLE PRECISION,
+          lat DOUBLE PRECISION,
+          lon DOUBLE PRECISION,
+          acknowledged BOOLEAN DEFAULT FALSE,
+          acknowledged_by TEXT,
+          acknowledged_at TIMESTAMPTZ,
+          created_at TIMESTAMPTZ DEFAULT now(),
+          PRIMARY KEY (asset_id, type, ts)
+        );
+      `);
+      console.log("iot_anomalies table created");
+
+      await client.query(`SELECT create_hypertable('iot_anomalies', 'ts', if_not_exists => TRUE);`);
+      console.log("iot_anomalies hypertable created");
+
+      // Add recommended indexes
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_anomaly_asset_time ON iot_anomalies (asset_id, ts DESC);`);
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_anomaly_severity ON iot_anomalies (severity, ts DESC);`);
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_anomaly_open ON iot_anomalies (acknowledged, ts DESC);`);
+      console.log("iot_anomalies indexes created");
+
       // Convert to hypertable
       await client.query(`
           SELECT create_hypertable('telemetry', 'ts', if_not_exists => TRUE);

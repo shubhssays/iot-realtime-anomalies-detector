@@ -1,0 +1,81 @@
+services:
+
+  # --------------------
+  # Kafka-compatible Broker (Redpanda)
+  # --------------------
+  redpanda:
+    image: redpandadata/redpanda:v23.3.13
+    container_name: redpanda
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp
+      - "1"
+      - --memory
+      - "1G"
+      - --reserve-memory
+      - "0M"
+      - --node-id
+      - "0"
+      - --check=false
+    ports:
+      - "9092:9092"   # Kafka API
+      - "9644:9644"   # Admin
+      - "8082:8082"   # HTTP proxy
+
+  # --------------------
+  # Apache Flink
+  # --------------------
+  jobmanager:
+    image: flink:1.18
+    container_name: flink_jobmanager
+    ports:
+      - "8081:8081"
+    command: jobmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+
+  taskmanager:
+    image: flink:1.18
+    container_name: flink_taskmanager
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+
+  # --------------------
+  # TimescaleDB (Postgres)
+  # --------------------
+  timescaledb:
+    image: timescale/timescaledb:latest-pg14
+    container_name: timescaledb
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: telemetry
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+
+  # --------------------
+  # ClickHouse
+  # --------------------
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    environment:
+     CLICKHOUSE_USER: admin
+     CLICKHOUSE_PASSWORD: secret
+     CLICKHOUSE_DB: telemetry  
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+
+volumes:
+  clickhouse_data:
+  timescaledb_data:

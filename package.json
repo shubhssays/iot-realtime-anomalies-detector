@@ -1,0 +1,19 @@
+{
+  "name": "iot-realtime-anomalies-detector",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@clickhouse/client": "^1.16.0",
+    "concurrently": "^9.2.1",
+    "dotenv": "^17.2.3",
+    "kafkajs": "^2.2.4",
+    "pg": "^8.17.2"
+  },
+  "scripts": {
+    "docker_up": "cd docker && docker-compose up -d",
+    "start_simulator": "concurrently \"node apps/node-backend/listener/index.js\" \"node apps/node-backend/simulator/iot-firehose.js\"",
+    "first_time_init": "cd scripts && node create-kafka-topics.js && node create-timeseries-db-tables.js && node create-clickhouse-db-tables.js"
+  }
+}

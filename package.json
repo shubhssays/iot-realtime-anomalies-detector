@@ -12,6 +12,8 @@
     "pg": "^8.17.2"
   },
   "scripts": {
+    "purge_dbs": "cd scripts && node purge-db.js",
+    "purge_kafka": "cd scripts && node purge-kafka.js",
     "docker_up": "cd docker && docker-compose up -d",
     "start_simulator": "concurrently \"node apps/node-backend/listener/index.js\" \"node apps/node-backend/simulator/iot-firehose.js\"",
     "first_time_init": "cd scripts && node create-kafka-topics.js && node create-timeseries-db-tables.js && node create-clickhouse-db-tables.js"

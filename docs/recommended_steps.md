@@ -33,7 +33,7 @@ CREATE TABLE telemetry (
 );
 SELECT create_hypertable('telemetry', 'ts');
 
-CREATE TABLE iot_anomalies (
+CREATE TABLE anomalies (
   id BIGSERIAL PRIMARY KEY,
   asset_id TEXT NOT NULL,
   type TEXT NOT NULL,
@@ -49,10 +49,10 @@ CREATE TABLE iot_anomalies (
   acknowledged_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT now()
 );
-SELECT create_hypertable('iot_anomalies', 'ts');
-CREATE INDEX idx_anomaly_asset_time ON iot_anomalies (asset_id, ts DESC);
-CREATE INDEX idx_anomaly_severity ON iot_anomalies (severity, ts DESC);
-CREATE INDEX idx_anomaly_open ON iot_anomalies (acknowledged, ts DESC);
+SELECT create_hypertable('anomalies', 'ts');
+CREATE INDEX idx_anomaly_asset_time ON anomalies (asset_id, ts DESC);
+CREATE INDEX idx_anomaly_severity ON anomalies (severity, ts DESC);
+CREATE INDEX idx_anomaly_open ON anomalies (acknowledged, ts DESC);
 ```
 
 ### Why anomalies go into TimescaleDB
@@ -87,7 +87,7 @@ CREATE TABLE telemetry (
 ) ENGINE = MergeTree()
 ORDER BY (asset_id, ts);
 
-CREATE TABLE iot_anomalies
+CREATE TABLE anomalies
 (
     asset_id String,
     type LowCardinality(String),

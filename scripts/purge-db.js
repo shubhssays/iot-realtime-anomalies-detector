@@ -34,10 +34,10 @@ async function purgeClickHouse() {
     console.log("   ✅ Telemetry table truncated");
 
     await client.command({
-      query: "TRUNCATE TABLE IF EXISTS iot_anomalies",
+      query: "TRUNCATE TABLE IF EXISTS anomalies",
     });
 
-    console.log("   ✅ iot_anomalies table truncated");
+    console.log("   ✅ anomalies table truncated");
 
     // OPTIMIZE TABLE forces merge of data parts and reclaims disk space
     // FINAL ensures all parts are merged into one
@@ -74,13 +74,13 @@ async function purgeTimescaleDB() {
     await client.query("TRUNCATE TABLE telemetry CASCADE;");
     console.log("   ✅ Telemetry hypertable truncated");
 
-    await client.query("TRUNCATE TABLE iot_anomalies CASCADE;");
-    console.log("   ✅ iot_anomalies table truncated");
+    await client.query("TRUNCATE TABLE anomalies CASCADE;");
+    console.log("   ✅ anomalies table truncated");
 
     // VACUUM FULL reclaims storage and defragments the table
     // ANALYZE updates statistics for query planner
     await client.query("VACUUM FULL ANALYZE telemetry;");
-    await client.query("VACUUM FULL ANALYZE iot_anomalies;");
+    await client.query("VACUUM FULL ANALYZE anomalies;");
     console.log("   ✅ VACUUM FULL completed (storage reclaimed)");
 
     // For hyper tables, also reorder chunks for optimal performance

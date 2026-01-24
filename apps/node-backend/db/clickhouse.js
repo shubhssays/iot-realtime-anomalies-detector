@@ -15,7 +15,7 @@ export async function bulkInsertToClickHouseAnomalies(rows) {
   }));
 
   await clickhouse.insert({
-    table: "iot_anomalies",
+    table: "anomalies",
     values: clickhouseRows,
     format: "JSONEachRow",
   });

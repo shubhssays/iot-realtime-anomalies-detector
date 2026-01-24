@@ -75,10 +75,10 @@ async function createClickHouseDBTables() {
 
     console.log("Telemetry table created successfully");
 
-    // Create iot_anomalies table (analytics)
+    // Create anomalies table (analytics)
     await client.command({
       query: `
-        CREATE TABLE IF NOT EXISTS iot_anomalies (
+        CREATE TABLE IF NOT EXISTS anomalies (
           asset_id String,
           type LowCardinality(String),
           severity LowCardinality(String),
@@ -94,7 +94,7 @@ async function createClickHouseDBTables() {
         ORDER BY (asset_id, ts)
       `,
     });
-    console.log("iot_anomalies table created successfully");
+    console.log("anomalies table created successfully");
 
     // Verify table creation
     const result = await client.query({

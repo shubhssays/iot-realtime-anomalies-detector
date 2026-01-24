@@ -24,7 +24,7 @@ export async function bulkInsertToTimescaleAnomalies(rows) {
     r.lon,
   ]);
   await pool.query(
-    `INSERT INTO iot_anomalies(asset_id, type, severity, ts, current_temperature, baseline_temperature, distance_from_route_km, lat, lon) VALUES ${values} ON CONFLICT (asset_id, type, ts) DO NOTHING;`,
+    `INSERT INTO anomalies(asset_id, type, severity, ts, current_temperature, baseline_temperature, distance_from_route_km, lat, lon) VALUES ${values} ON CONFLICT (asset_id, type, ts) DO NOTHING;`,
     params
   );
 }

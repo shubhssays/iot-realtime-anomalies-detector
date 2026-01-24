@@ -45,8 +45,8 @@ async function createTimeSeriesDBTables() {
     await client.query("CREATE EXTENSION IF NOT EXISTS timescaledb;");
     console.log("TimescaleDB extension enabled");
 
-      // Create telemetry table
-      await client.query(`
+    // Create telemetry table
+    await client.query(`
           CREATE TABLE IF NOT EXISTS telemetry (
             asset_id TEXT,
             ts TIMESTAMPTZ,
@@ -55,11 +55,11 @@ async function createTimeSeriesDBTables() {
             PRIMARY KEY (asset_id, ts)
           );
         `);
-      console.log("Telemetry table created");
+    console.log("Telemetry table created");
 
-      // Create iot_anomalies table (operational truth)
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS iot_anomalies (
+    // Create anomalies table (operational truth)
+    await client.query(`
+        CREATE TABLE IF NOT EXISTS anomalies (
           asset_id TEXT NOT NULL,
           type TEXT NOT NULL,
           severity TEXT NOT NULL,
@@ -76,19 +76,19 @@ async function createTimeSeriesDBTables() {
           PRIMARY KEY (asset_id, type, ts)
         );
       `);
-      console.log("iot_anomalies table created");
+    console.log("anomalies table created");
 
-      await client.query(`SELECT create_hypertable('iot_anomalies', 'ts', if_not_exists => TRUE);`);
-      console.log("iot_anomalies hypertable created");
+    await client.query(`SELECT create_hypertable('anomalies', 'ts', if_not_exists => TRUE);`);
+    console.log("anomalies hypertable created");
 
-      // Add recommended indexes
-      await client.query(`CREATE INDEX IF NOT EXISTS idx_anomaly_asset_time ON iot_anomalies (asset_id, ts DESC);`);
-      await client.query(`CREATE INDEX IF NOT EXISTS idx_anomaly_severity ON iot_anomalies (severity, ts DESC);`);
-      await client.query(`CREATE INDEX IF NOT EXISTS idx_anomaly_open ON iot_anomalies (acknowledged, ts DESC);`);
-      console.log("iot_anomalies indexes created");
+    // Add recommended indexes
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_anomaly_asset_time ON anomalies (asset_id, ts DESC);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_anomaly_severity ON anomalies (severity, ts DESC);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_anomaly_open ON anomalies (acknowledged, ts DESC);`);
+    console.log("anomalies indexes created");
 
-      // Convert to hypertable
-      await client.query(`
+    // Convert to hypertable
+    await client.query(`
           SELECT create_hypertable('telemetry', 'ts', if_not_exists => TRUE);
         `);
     console.log("Hypertable created successfully");

@@ -3,6 +3,8 @@ const producer = KafkaProducer.getInstance();
 
 const ASSET_COUNT = 500;
 const EVENTS_PER_SECOND = 5000;
+const RUN_FOR_SECONDS = Infinity;
+
 
 const ASSETS = Array.from({ length: ASSET_COUNT }, (_, i) => `shipment_${i}`);
 
@@ -24,7 +26,7 @@ function generateEvent(assetId) {
 async function start() {
   await producer.connect();
 
-  while (true) {
+  while (RUN_FOR_SECONDS === Infinity || Date.now() < RUN_FOR_SECONDS * 1000) {
     const batch = [];
 
     for (let i = 0; i < EVENTS_PER_SECOND; i++) {

@@ -116,6 +116,53 @@ node apps/node-backend/listener/telemetry-listener.js
 node apps/node-backend/listener/anomaly-listener.js
 ```
 
+Or use the combined command:
+
+```bash
+yarn start_simulator
+```
+
+---
+
+## Frontend Dashboard
+
+The project includes a real-time anomaly alerts dashboard that connects via WebSocket.
+
+### Starting the Frontend
+
+**Option 1 - Direct file access:**
+Open `apps/frontend/index.html` directly in a browser.
+
+**Option 2 - HTTP server:**
+```bash
+yarn start_frontend
+# Opens at http://localhost:8080
+```
+
+### WebSocket Connection
+
+The frontend connects to the WebSocket server on `ws://localhost:3001`, which is automatically started by the anomaly listener.
+
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| Real-time alerts | Anomalies appear instantly as detected |
+| Severity colors | Critical (red), High (orange), Medium (yellow) |
+| Stats dashboard | Live counts for total/critical/high/medium |
+| Auto-reconnect | Reconnects automatically if connection drops |
+| Sound toggle | Optional audio notifications |
+
+### Architecture
+
+```
+IoT Simulator → Kafka → Flink → Anomaly Listener → WebSocket Server → Frontend
+                                      ↓
+                              TimescaleDB / ClickHouse
+```
+
+---
+
 ### Why anomalies go into ClickHouse
 
 ClickHouse is for:

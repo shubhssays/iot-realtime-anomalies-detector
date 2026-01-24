@@ -2,13 +2,22 @@ import "dotenv/config";
 import { Kafka } from "kafkajs";
 import { bulkInsertToClickHouseAnomalies } from "../db/clickhouse.js";
 import { bulkInsertToTimescaleAnomalies } from "../db/timescale.js";
+import { getWebSocketServer } from "../websocket/ws-server.js";
+
+// WebSocket server instance for broadcasting anomalies
+let wsServer = null;
 
 /**
  * Kafka Listener for Anomalies
  * Consumes anomaly events from Kafka and bulk inserts into TimescaleDB and ClickHouse.
+ * Also broadcasts anomalies to connected WebSocket clients.
  */
 async function main() {
   console.log("🚨 Starting Kafka Anomaly Listener...");
+
+  // Initialize and start WebSocket server
+  wsServer = getWebSocketServer(3001);
+  wsServer.start();
 
   const kafka = new Kafka({
     clientId: "iot-anomaly-backend",
@@ -21,6 +30,7 @@ async function main() {
   await consumer.subscribe({ topic: "iot.anomalies", fromBeginning: false });
 
   process.on("SIGINT", async () => {
+    wsServer.stop();
     await consumer.disconnect();
     process.exit(0);
   });
@@ -37,6 +47,8 @@ async function main() {
           bulkInsertToClickHouseAnomalies(rows),
           bulkInsertToTimescaleAnomalies(rows),
         ]);
+        // Broadcast all anomalies to connected WebSocket clients
+        rows.forEach((row) => triggerAnomalyNotification(row));
       } catch (error) {
         console.error("❌ Anomaly batch insert failed:", error.message);
         return;
@@ -76,10 +88,16 @@ function transformAnomalyEventToRow(event) {
   };
 }
 
-// Notification trigger stub (not implemented)
+/**
+ * Trigger anomaly notification via WebSocket broadcast
+ * @param {Object} anomalyEvent - The transformed anomaly event
+ */
 export function triggerAnomalyNotification(anomalyEvent) {
-  // TODO: Implement notification via websocket, email, or push
-  console.log("🔔 Anomaly notification triggered:", anomalyEvent) ;
+  if (wsServer) {
+    wsServer.broadcastAnomaly(anomalyEvent);
+  }
+  console.log("🔔 Anomaly notification triggered:", anomalyEvent.type, anomalyEvent.severity);
 }
 
 main();
+

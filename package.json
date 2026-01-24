@@ -1,7 +1,7 @@
 {
   "name": "iot-realtime-anomalies-detector",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Real-time IoT anomaly detection system with Kafka, Flink, TimescaleDB, ClickHouse and WebSocket alerts",
   "license": "MIT",
   "type": "module",
   "dependencies": {
@@ -14,15 +14,10 @@
     "ws": "^8.18.0"
   },
   "scripts": {
-    "deploy_flink": "cd scripts && node deploy-flink.js",
-    "purge_dbs": "cd scripts && node purge-db.js",
-    "purge_kafka": "cd scripts && node purge-kafka.js",
-    "docker_up": "cd docker && docker compose up -d",
-    "start_telemetry_listener": "node apps/node-backend/listener/telemetry-listener.js",
-    "start_anomaly_listener": "node apps/node-backend/listener/anomaly-listener.js",
-    "start_frontend": "npx -y http-server apps/frontend -p 8080 -c-1",
-    "start_simulator": "concurrently \"yarn start_telemetry_listener\" \"yarn start_anomaly_listener\" \"node apps/node-backend/simulator/iot-firehose.js\"",
-    "first_time_init": "cd scripts && node create-kafka-topics.js && node create-timeseries-db-tables.js && node create-clickhouse-db-tables.js",
-    "start_all": "yarn docker_up && yarn first_time_init && concurrently \"yarn start_telemetry_listener\" \"yarn start_anomaly_listener\" \"node apps/node-backend/simulator/iot-firehose.js\""
+    "setup": "cd docker && docker compose up -d && echo 'Waiting for databases to start...' && sleep 10 && cd ../scripts && node create-kafka-topics.js && node create-timeseries-db-tables.js && node create-clickhouse-db-tables.js",
+    "start": "concurrently \"node apps/node-backend/listener/telemetry-listener.js\" \"node apps/node-backend/listener/anomaly-listener.js\" \"node apps/node-backend/simulator/iot-firehose.js\"",
+    "start:frontend": "npx -y http-server apps/frontend -p 8080 -c-1",
+    "deploy:flink": "cd scripts && node deploy-flink.js",
+    "purge": "cd scripts && node purge-db.js && node purge-kafka.js"
   }
 }

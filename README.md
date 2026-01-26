@@ -81,9 +81,22 @@ A real-time IoT anomaly detection pipeline using Apache Kafka, Apache Flink, Tim
 
 ## Prerequisites
 
-- **Docker** & **Docker Compose**
-- **Node.js** v18+
-- **Yarn** package manager
+| Requirement | Version | Download |
+|-------------|---------|----------|
+| **Java (JDK)** | 11 or 17 | [Oracle JDK](https://www.oracle.com/java/technologies/downloads/) or [OpenJDK](https://adoptium.net/) |
+| **Apache Maven** | 3.8+ | [Download Maven](https://maven.apache.org/download.cgi) |
+| **Docker** | Latest | [Docker Desktop](https://www.docker.com/products/docker-desktop/) |
+| **Docker Compose** | v2+ | Included with Docker Desktop |
+| **Node.js** | v18+ | [Download Node.js](https://nodejs.org/) |
+| **Yarn** | Latest | Install via `npm install -g yarn` |
+
+> **Tip:** After installing Java and Maven, verify your setup by running:
+> ```bash
+> java -version
+> mvn -version
+> docker --version
+> node --version
+> ```
 
 ## Project Structure
 

@@ -66,7 +66,10 @@ echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo ""
     echo "Starting services..."
-    echo "This may take a few minutes on first run (downloading images)..."
+    echo "This may take a few minutes on first run (downloading images + building apps)..."
+    echo "  - Downloading Docker images: ~1-2 minutes"
+    echo "  - Building Node.js app: ~15 seconds"
+    echo "  - Building Python app: ~10 seconds"
     echo ""
     
     docker compose up -d

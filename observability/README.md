@@ -160,6 +160,29 @@ curl http://localhost:8000/error  # Generates error trace
    - **Traces**: View distributed traces
    - **Metrics**: View application metrics
 
+### 7. Troubleshooting with Diagnostic Script
+
+If you don't see data in OpenObserve, use the diagnostic script:
+
+```bash
+./diagnose.sh
+```
+
+The script will:
+- ✅ Check if all services are running
+- ✅ Scan logs for errors
+- ✅ Test connectivity between components
+- ✅ Generate test traffic
+- ✅ Verify data export
+- ✅ Provide detailed troubleshooting steps
+
+**Common issues it helps detect:**
+- Services not running
+- Network connectivity problems
+- Configuration errors
+- Export failures
+- Missing data streams
+
 ---
 
 ## 🏛️ Architecture Details

@@ -5,17 +5,40 @@ This guide covers common issues and their solutions.
 ## Table of Contents
 
 1. [Quick Diagnostics](#quick-diagnostics)
-2. [Common Issues](#common-issues)
-3. [Debugging Checklist](#debugging-checklist)
-4. [Log Analysis](#log-analysis)
-5. [Performance Issues](#performance-issues)
-6. [Getting Help](#getting-help)
+2. [Automated Diagnostic Tool](#automated-diagnostic-tool)
+3. [Common Issues](#common-issues)
+4. [Debugging Checklist](#debugging-checklist)
+5. [Log Analysis](#log-analysis)
+6. [Performance Issues](#performance-issues)
+7. [Getting Help](#getting-help)
 
 ---
 
 ## Quick Diagnostics
 
-### Health Check All Services
+### 🔍 Automated Diagnostic Tool (Recommended)
+
+**The fastest way to diagnose issues is to use the diagnostic script:**
+
+```bash
+./diagnose.sh
+```
+
+This script automatically:
+- ✅ Checks if all services are running
+- ✅ Scans logs for errors
+- ✅ Tests connectivity between services
+- ✅ Generates test traffic
+- ✅ Verifies data export to OpenObserve
+- ✅ Provides step-by-step troubleshooting guidance
+
+**Run this first before manually troubleshooting!**
+
+---
+
+### Manual Health Checks
+
+If you prefer manual diagnostics:
 
 ```bash
 # Check all services

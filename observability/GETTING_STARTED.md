@@ -43,6 +43,9 @@ cd observability
 # Start all services
 docker compose up -d
 
+# Wait for services to initialize (first time takes longer)
+sleep 30
+
 # Check service status
 docker compose ps
 
@@ -50,22 +53,24 @@ docker compose ps
 docker compose logs -f
 ```
 
+**Note:** The first time you run this, Docker will download images and build the sample applications. This may take 2-5 minutes depending on your internet connection.
+
 ## Verify Installation
 
-After starting the stack, verify all services are running:
+After starting the stack, wait about 30 seconds, then verify all services are running:
 
 ```bash
 # Check container status
 docker compose ps
 
-# All services should show "Up" or "Up (healthy)"
+# All services should show "Up"
 ```
 
 Expected output:
 ```
 NAME                IMAGE                                    STATUS
 nodejs-app          observability-nodejs-app                 Up
-openobserve         public.ecr.aws/zinclabs/openobserve      Up (healthy)
+openobserve         public.ecr.aws/zinclabs/openobserve      Up
 otel-collector      otel/opentelemetry-collector-contrib     Up
 python-app          observability-python-app                 Up
 traffic-generator   curlimages/curl                          Up

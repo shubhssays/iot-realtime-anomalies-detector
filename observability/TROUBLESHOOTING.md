@@ -64,7 +64,44 @@ curl http://localhost:8000/health
 
 ## Common Issues
 
-### Issue 1: "Cannot connect to OpenObserve"
+### Issue 1: "Container openobserve is unhealthy" or "dependency failed to start"
+
+**Symptoms:**
+- Error during `docker compose up`: `dependency failed to start: container openobserve is unhealthy`
+- Services fail to start because OpenObserve appears unhealthy
+
+**Cause:**
+This was an issue in earlier versions where the healthcheck used `wget` which wasn't available in the OpenObserve container. This has been fixed by removing the healthcheck.
+
+**Solutions:**
+
+1. **Update to latest version:**
+   ```bash
+   git pull
+   ```
+
+2. **If still seeing issues, give OpenObserve time to start:**
+   OpenObserve takes about 10-15 seconds to fully initialize. The collector and apps will start once OpenObserve is running.
+
+3. **Manual startup approach:**
+   ```bash
+   # Start OpenObserve first
+   docker compose up -d openobserve
+   
+   # Wait 15 seconds
+   sleep 15
+   
+   # Start remaining services
+   docker compose up -d
+   ```
+
+4. **Verify OpenObserve is running:**
+   ```bash
+   curl http://localhost:5080/healthz
+   # Should return: {"status":"ok"}
+   ```
+
+### Issue 2: "Cannot connect to OpenObserve"
 
 **Symptoms:**
 - Cannot access http://localhost:5080
@@ -105,7 +142,7 @@ curl http://localhost:8000/health
 
 ---
 
-### Issue 2: "No data appearing in OpenObserve"
+### Issue 3: "No data appearing in OpenObserve"
 
 **Symptoms:**
 - OpenObserve UI is empty
@@ -174,7 +211,7 @@ curl http://localhost:8000/health
 
 ---
 
-### Issue 3: "401 Unauthorized" errors in collector logs
+### Issue 4: "401 Unauthorized" errors in collector logs
 
 **Symptoms:**
 - Collector logs show "401 Unauthorized"
@@ -213,7 +250,7 @@ The collector needs proper authentication. Update the collector configuration:
 
 ---
 
-### Issue 4: "Port already in use"
+### Issue 5: "Port already in use"
 
 **Symptoms:**
 - Error: "Bind for 0.0.0.0:5080 failed: port is already allocated"
@@ -253,7 +290,7 @@ The collector needs proper authentication. Update the collector configuration:
 
 ---
 
-### Issue 5: "High memory usage / OOM kills"
+### Issue 6: "High memory usage / OOM kills"
 
 **Symptoms:**
 - Containers restart frequently
@@ -317,7 +354,7 @@ The collector needs proper authentication. Update the collector configuration:
 
 ---
 
-### Issue 6: "Collector not exporting data"
+### Issue 7: "Collector not exporting data"
 
 **Symptoms:**
 - Apps are instrumented
@@ -378,7 +415,7 @@ The collector needs proper authentication. Update the collector configuration:
 
 ---
 
-### Issue 7: "Apps can't connect to collector"
+### Issue 8: "Apps can't connect to collector"
 
 **Symptoms:**
 - App logs show "connection refused"
@@ -426,7 +463,7 @@ The collector needs proper authentication. Update the collector configuration:
 
 ---
 
-### Issue 8: "Missing or incomplete traces"
+### Issue 9: "Missing or incomplete traces"
 
 **Symptoms:**
 - Some traces appear, others don't
@@ -487,7 +524,7 @@ The collector needs proper authentication. Update the collector configuration:
 
 ---
 
-### Issue 9: "OpenObserve UI is slow"
+### Issue 10: "OpenObserve UI is slow"
 
 **Symptoms:**
 - Long query times

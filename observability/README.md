@@ -103,7 +103,11 @@ This starts:
 - ✅ Python sample app (instrumented)
 - ✅ Traffic generator (automatic testing)
 
+**Note:** First-time setup downloads images and builds applications, which may take 2-5 minutes depending on your internet connection. OpenObserve takes about 10-15 seconds to fully initialize before other services can connect.
+
 ### 3. Verify Services
+
+Wait about 30 seconds for all services to start, then check:
 
 ```bash
 docker compose ps
@@ -113,7 +117,7 @@ Expected output:
 ```
 NAME                IMAGE                                    STATUS
 nodejs-app          observability-nodejs-app                 Up
-openobserve         public.ecr.aws/zinclabs/openobserve      Up (healthy)
+openobserve         public.ecr.aws/zinclabs/openobserve      Up
 otel-collector      otel/opentelemetry-collector-contrib     Up
 python-app          observability-python-app                 Up
 traffic-generator   curlimages/curl                          Up

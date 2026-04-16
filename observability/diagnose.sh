@@ -44,7 +44,7 @@ echo "--------------------------------------"
 
 check_service() {
     local service=$1
-    local status=$(docker compose ps --filter "service=$service" --format "{{.Status}}" 2>/dev/null | head -1)
+    local status=$(docker compose ps "$service" --format "{{.Status}}" 2>/dev/null | head -1)
     
     # Check if status contains "Up" (case-insensitive)
     if [[ "$status" =~ ^Up ]]; then

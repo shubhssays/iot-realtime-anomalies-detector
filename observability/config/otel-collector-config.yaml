@@ -71,9 +71,11 @@ exporters:
     sampling_thereafter: 200
 
   # OpenObserve exporter for traces
-  # Note: OpenObserve OTLP endpoints use /v1/ format (not /otlp/v1/)
+  # Note: OTLP HTTP exporter automatically appends /v1/traces to the endpoint
+  # Base endpoint should be: /api/{org}/otlp
+  # Final URL will be: /api/{org}/otlp/v1/traces
   otlphttp/traces:
-    endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/v1/traces
+    endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/otlp
     headers:
       Authorization: Basic YWRtaW5AZXhhbXBsZS5jb206QWRtaW5AMTIz
       stream-name: default
@@ -85,9 +87,12 @@ exporters:
       max_interval: 30s
       max_elapsed_time: 300s
 
-  # OpenObserve exporter for metrics  
+  # OpenObserve exporter for metrics
+  # Note: OTLP HTTP exporter automatically appends /v1/metrics to the endpoint
+  # Base endpoint should be: /api/{org}/otlp
+  # Final URL will be: /api/{org}/otlp/v1/metrics
   otlphttp/metrics:
-    endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/v1/metrics
+    endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/otlp
     headers:
       Authorization: Basic YWRtaW5AZXhhbXBsZS5jb206QWRtaW5AMTIz
       stream-name: default
@@ -100,8 +105,11 @@ exporters:
       max_elapsed_time: 300s
 
   # OpenObserve exporter for logs
+  # Note: OTLP HTTP exporter automatically appends /v1/logs to the endpoint
+  # Base endpoint should be: /api/{org}/otlp
+  # Final URL will be: /api/{org}/otlp/v1/logs
   otlphttp/logs:
-    endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/v1/logs
+    endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/otlp
     headers:
       Authorization: Basic YWRtaW5AZXhhbXBsZS5jb206QWRtaW5AMTIz
       stream-name: default

@@ -22,11 +22,8 @@ services:
       - openobserve_data:/data
     networks:
       - observability-network
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5080/healthz"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    # Note: OpenObserve container is minimal and doesn't include wget/curl
+    # Healthcheck removed - services will use depends_on with condition: service_started
 
   # --------------------
   # OpenTelemetry Collector
@@ -45,7 +42,8 @@ services:
       - "13133:13133" # Health check extension
     depends_on:
       openobserve:
-        condition: service_healthy
+        condition: service_started
+    restart: unless-stopped
     networks:
       - observability-network
     environment:

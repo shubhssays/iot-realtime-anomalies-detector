@@ -204,10 +204,30 @@ This was an issue in earlier versions where the healthcheck used `wget` which wa
 
 **Common Causes:**
 
+- **Wrong OTLP endpoint paths**: OpenObserve requires `/otlp/v1/` in the path (e.g., `/api/default/otlp/v1/traces` not `/api/default/traces`)
 - **Wrong credentials**: Check `ZO_ROOT_USER_EMAIL` and `ZO_ROOT_USER_PASSWORD` in docker-compose.yml
 - **Network issue**: Ensure all services are on the same Docker network
 - **Collector misconfiguration**: Verify `otel-collector-config.yaml` syntax
 - **OpenObserve not ready**: Wait 30 seconds after starting for initialization
+
+**Quick Fix for OTLP Endpoint Issue:**
+
+If you see errors like "404 Not Found" in the collector logs, the OTLP endpoints may be wrong:
+
+```bash
+# Check collector logs for 404 errors
+docker compose logs otel-collector | grep "404"
+
+# If found, verify endpoints in config/otel-collector-config.yaml
+# Should be:
+#   /api/default/otlp/v1/traces
+#   /api/default/otlp/v1/metrics
+#   /api/default/otlp/v1/logs
+# NOT:
+#   /api/default/traces
+#   /api/default/metrics
+#   /api/default/logs
+```
 
 ---
 

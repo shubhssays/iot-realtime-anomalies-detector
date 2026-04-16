@@ -204,7 +204,7 @@ This was an issue in earlier versions where the healthcheck used `wget` which wa
 
 **Common Causes:**
 
-- **Wrong OTLP endpoint paths**: OpenObserve requires `/otlp/v1/` in the path (e.g., `/api/default/otlp/v1/traces` not `/api/default/traces`)
+- **Wrong OTLP endpoint paths**: OpenObserve uses `/api/{org}/v1/traces` format (e.g., `/api/default/v1/traces` not `/api/default/otlp/v1/traces`)
 - **Wrong credentials**: Check `ZO_ROOT_USER_EMAIL` and `ZO_ROOT_USER_PASSWORD` in docker-compose.yml
 - **Network issue**: Ensure all services are on the same Docker network
 - **Collector misconfiguration**: Verify `otel-collector-config.yaml` syntax
@@ -220,13 +220,12 @@ docker compose logs otel-collector | grep "404"
 
 # If found, verify endpoints in config/otel-collector-config.yaml
 # Should be:
-#   /api/default/otlp/v1/traces
-#   /api/default/otlp/v1/metrics
-#   /api/default/otlp/v1/logs
+#   /api/default/v1/traces
+#   /api/default/v1/metrics
+#   /api/default/v1/logs
 # NOT:
+#   /api/default/otlp/v1/traces
 #   /api/default/traces
-#   /api/default/metrics
-#   /api/default/logs
 ```
 
 ---

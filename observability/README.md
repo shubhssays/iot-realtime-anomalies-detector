@@ -488,16 +488,16 @@ docker compose up -d --build
 
 **Common Cause**: Wrong OTLP endpoint paths in collector configuration
 
-OpenObserve requires `/otlp/v1/` in the OTLP endpoint paths. Check your `config/otel-collector-config.yaml`:
+OpenObserve's OTLP endpoints use the format `/api/{org}/v1/{signal}`. Check your `config/otel-collector-config.yaml`:
 
 ```yaml
 exporters:
   otlphttp/traces:
-    # ✅ CORRECT: includes /otlp/v1/
-    endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/otlp/v1/traces
+    # ✅ CORRECT
+    endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/v1/traces
     
-    # ❌ WRONG: missing /otlp/v1/
-    # endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/traces
+    # ❌ WRONG - has /otlp/ in path
+    # endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/otlp/v1/traces
 ```
 
 **Quick Check**:

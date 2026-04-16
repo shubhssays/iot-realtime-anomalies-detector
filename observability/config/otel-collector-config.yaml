@@ -71,9 +71,9 @@ exporters:
     sampling_thereafter: 200
 
   # OpenObserve exporter for traces
-  # Note: OpenObserve OTLP endpoints require /otlp/v1/ in the path
+  # Note: OpenObserve OTLP endpoints use /v1/ format (not /otlp/v1/)
   otlphttp/traces:
-    endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/otlp/v1/traces
+    endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/v1/traces
     headers:
       Authorization: Basic YWRtaW5AZXhhbXBsZS5jb206QWRtaW5AMTIz
       stream-name: default
@@ -87,7 +87,7 @@ exporters:
 
   # OpenObserve exporter for metrics  
   otlphttp/metrics:
-    endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/otlp/v1/metrics
+    endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/v1/metrics
     headers:
       Authorization: Basic YWRtaW5AZXhhbXBsZS5jb206QWRtaW5AMTIz
       stream-name: default
@@ -101,7 +101,7 @@ exporters:
 
   # OpenObserve exporter for logs
   otlphttp/logs:
-    endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/otlp/v1/logs
+    endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/v1/logs
     headers:
       Authorization: Basic YWRtaW5AZXhhbXBsZS5jb206QWRtaW5AMTIz
       stream-name: default

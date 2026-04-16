@@ -104,7 +104,8 @@ echo "--------------------------------"
 
 # Test if collector can reach OpenObserve
 echo "Testing OTel Collector → OpenObserve connectivity..."
-HEALTH_CHECK=$(docker compose exec -T otel-collector wget -qO- http://openobserve:5080/healthz 2>&1 || echo "failed")
+# Try wget first, fall back to curl if not available
+HEALTH_CHECK=$(docker compose exec -T otel-collector sh -c 'command -v wget >/dev/null && wget -qO- http://openobserve:5080/healthz || (command -v curl >/dev/null && curl -s http://openobserve:5080/healthz)' 2>&1 || echo "failed")
 
 if echo "$HEALTH_CHECK" | grep -q "ok"; then
     echo -e "${GREEN}✓${NC} OTel Collector can reach OpenObserve"
@@ -115,7 +116,8 @@ fi
 
 # Test if apps can reach collector
 echo "Testing Node.js app → OTel Collector connectivity..."
-NODE_CHECK=$(docker compose exec -T nodejs-app wget -qO- http://otel-collector:4318 2>&1 || echo "failed")
+# Try wget first, fall back to curl
+NODE_CHECK=$(docker compose exec -T nodejs-app sh -c 'command -v wget >/dev/null && wget -qO- http://otel-collector:4318 || (command -v curl >/dev/null && curl -s http://otel-collector:4318)' 2>&1 || echo "failed")
 if echo "$NODE_CHECK" | grep -q -E "404|Method Not Allowed"; then
     echo -e "${GREEN}✓${NC} Node.js app can reach OTel Collector"
 else

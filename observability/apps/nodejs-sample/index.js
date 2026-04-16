@@ -11,7 +11,7 @@ const otelLogger = logs.getLogger('nodejs-sample-app', '1.0.0');
 
 // Create a custom Pino transport that also sends to OpenTelemetry
 const pinoOtelTransport = {
-  write: function(msg) {
+  write: function transportWrite(msg) {
     try {
       const log = JSON.parse(msg);
       const severityMap = {
@@ -23,14 +23,25 @@ const pinoOtelTransport = {
         60: 'FATAL'
       };
       
+      // Extract relevant attributes, exclude noisy fields
+      const attributes = {
+        'log.source': 'nodejs-app',
+        'log.level': log.level
+      };
+      
+      // Add optional structured fields if present
+      if (log.method) attributes['http.method'] = log.method;
+      if (log.path) attributes['http.path'] = log.path;
+      if (log.status) attributes['http.status_code'] = log.status;
+      if (log.duration) attributes['http.duration'] = log.duration;
+      if (log.ip) attributes['client.ip'] = log.ip;
+      if (log.error) attributes['error.message'] = log.error;
+      
       otelLogger.emit({
         severityText: severityMap[log.level] || 'INFO',
         severityNumber: log.level,
         body: log.msg || JSON.stringify(log),
-        attributes: {
-          ...log,
-          'log.source': 'nodejs-app'
-        }
+        attributes: attributes
       });
     } catch (e) {
       // If parsing fails, just send the raw message

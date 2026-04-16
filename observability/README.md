@@ -486,6 +486,28 @@ docker compose up -d --build
 - OpenObserve UI is empty
 - No logs, traces, or metrics visible
 
+**Common Cause**: Wrong OTLP endpoint paths in collector configuration
+
+OpenObserve requires `/otlp/v1/` in the OTLP endpoint paths. Check your `config/otel-collector-config.yaml`:
+
+```yaml
+exporters:
+  otlphttp/traces:
+    # ✅ CORRECT: includes /otlp/v1/
+    endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/otlp/v1/traces
+    
+    # ❌ WRONG: missing /otlp/v1/
+    # endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/traces
+```
+
+**Quick Check**:
+```bash
+# Look for 404 errors in collector logs
+docker compose logs otel-collector | grep "404"
+
+# If you see 404 errors, the endpoint paths are wrong
+```
+
 **Diagnostic Steps**:
 
 1. **Check if apps are sending data**:

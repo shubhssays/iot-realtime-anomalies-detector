@@ -227,7 +227,7 @@ This was an issue in earlier versions where the healthcheck used `wget` which wa
 
 **Common Causes:**
 
-- **Wrong OTLP endpoint paths**: OpenObserve uses `/api/{org}/v1/traces` format (e.g., `/api/default/v1/traces` not `/api/default/otlp/v1/traces`)
+- **Wrong OTLP endpoint paths**: OpenObserve base endpoint should be `/api/{org}/otlp` (e.g., `/api/default/otlp`). The OTLP HTTP exporter automatically appends `/v1/traces`, `/v1/metrics`, or `/v1/logs`.
 - **Wrong credentials**: Check `ZO_ROOT_USER_EMAIL` and `ZO_ROOT_USER_PASSWORD` in docker-compose.yml
 - **Network issue**: Ensure all services are on the same Docker network
 - **Collector misconfiguration**: Verify `otel-collector-config.yaml` syntax
@@ -242,13 +242,16 @@ If you see errors like "404 Not Found" in the collector logs, the OTLP endpoints
 docker compose logs otel-collector | grep "404"
 
 # If found, verify endpoints in config/otel-collector-config.yaml
-# Should be:
-#   /api/default/v1/traces
-#   /api/default/v1/metrics
-#   /api/default/v1/logs
-# NOT:
-#   /api/default/otlp/v1/traces
-#   /api/default/traces
+# The base endpoint should be: /api/default/otlp
+# 
+# CORRECT configuration:
+#   endpoint: http://openobserve:5080/api/default/otlp
+#   (OTLP exporter automatically appends /v1/traces, /v1/metrics, /v1/logs)
+#   Final URLs: /api/default/otlp/v1/traces, /api/default/otlp/v1/metrics, etc.
+# 
+# INCORRECT (will cause 404):
+#   endpoint: http://openobserve:5080/api/default/v1/traces
+#   (Results in: /api/default/v1/traces/v1/traces - duplicate path!)
 ```
 
 ---

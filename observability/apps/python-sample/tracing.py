@@ -1,0 +1,72 @@
+"""
+OpenTelemetry Tracing Configuration for Python Application
+This module configures OpenTelemetry SDK with OTLP exporters
+"""
+import logging
+import os
+from opentelemetry import trace, metrics
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+from opentelemetry.sdk.resources import Resource, SERVICE_NAME, SERVICE_VERSION, DEPLOYMENT_ENVIRONMENT
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.instrumentation.logging import LoggingInstrumentor
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Get configuration from environment
+service_name = os.getenv('OTEL_SERVICE_NAME', 'python-sample-app')
+otlp_endpoint = os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', 'http://otel-collector:4318')
+
+# Configure resource attributes
+resource = Resource(attributes={
+    SERVICE_NAME: service_name,
+    SERVICE_VERSION: "1.0.0",
+    DEPLOYMENT_ENVIRONMENT: "local",
+    "service.instance.id": f"{os.getenv('HOSTNAME', 'localhost')}-{os.getpid()}",
+})
+
+# Configure trace provider
+trace_provider = TracerProvider(resource=resource)
+trace_exporter = OTLPSpanExporter(
+    endpoint=f"{otlp_endpoint}/v1/traces",
+)
+trace_provider.add_span_processor(BatchSpanProcessor(trace_exporter))
+trace.set_tracer_provider(trace_provider)
+
+# Configure metrics provider
+metric_exporter = OTLPMetricExporter(
+    endpoint=f"{otlp_endpoint}/v1/metrics",
+)
+metric_reader = PeriodicExportingMetricReader(
+    exporter=metric_exporter,
+    export_interval_millis=10000,  # Export every 10 seconds
+)
+meter_provider = MeterProvider(
+    resource=resource,
+    metric_readers=[metric_reader]
+)
+metrics.set_meter_provider(meter_provider)
+
+# Instrument logging
+LoggingInstrumentor().instrument(set_logging_format=True)
+
+logger.info(f"OpenTelemetry SDK initialized for {service_name}")
+logger.info(f"Exporting to: {otlp_endpoint}")
+
+# Get tracer and meter instances
+tracer = trace.get_tracer(__name__, "1.0.0")
+meter = metrics.get_meter(__name__, "1.0.0")
+
+def instrument_app(app):
+    """Instrument FastAPI application"""
+    FastAPIInstrumentor.instrument_app(app)
+    logger.info("FastAPI instrumentation complete")

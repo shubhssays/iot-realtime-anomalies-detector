@@ -1,0 +1,23 @@
+{
+  "name": "nodejs-sample-app",
+  "version": "1.0.0",
+  "description": "Sample Node.js app instrumented with OpenTelemetry",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --require ./tracing.js index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "@opentelemetry/api": "^1.8.0",
+    "@opentelemetry/sdk-node": "^0.49.1",
+    "@opentelemetry/auto-instrumentations-node": "^0.42.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.49.1",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.49.1",
+    "@opentelemetry/exporter-logs-otlp-http": "^0.49.1",
+    "@opentelemetry/instrumentation-http": "^0.49.1",
+    "@opentelemetry/instrumentation-express": "^0.38.0",
+    "@opentelemetry/resources": "^1.22.0",
+    "@opentelemetry/semantic-conventions": "^1.22.0",
+    "pino": "^8.19.0"
+  }
+}

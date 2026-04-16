@@ -1,0 +1,162 @@
+# OpenTelemetry Collector Configuration for OpenObserve
+# This configuration receives traces, metrics, and logs from instrumented applications
+# and exports them to OpenObserve
+
+receivers:
+  # OTLP receiver for traces, metrics, and logs
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins:
+            - "*"
+
+  # Prometheus receiver to scrape collector's own metrics
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'otel-collector'
+          scrape_interval: 10s
+          static_configs:
+            - targets: ['localhost:8888']
+
+processors:
+  # Batch processor - buffers data before sending
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+    send_batch_max_size: 2048
+
+  # Memory limiter to prevent OOM
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+    spike_limit_mib: 128
+
+  # Resource processor - adds additional resource attributes
+  resource:
+    attributes:
+      - key: collector.name
+        value: otel-collector
+        action: insert
+      - key: deployment.environment
+        value: local
+        action: insert
+
+  # Attributes processor for traces
+  attributes/traces:
+    actions:
+      - key: http.route
+        action: upsert
+        from_attribute: http.target
+      - key: environment
+        value: local
+        action: insert
+
+  # Attributes processor for metrics
+  attributes/metrics:
+    actions:
+      - key: environment
+        value: local
+        action: insert
+
+exporters:
+  # Debug exporter - useful for troubleshooting
+  debug:
+    verbosity: detailed
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+  # OpenObserve exporter for traces
+  otlphttp/traces:
+    endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/traces
+    headers:
+      Authorization: "Basic ${OPENOBSERVE_AUTH}"
+      stream-name: default
+    compression: gzip
+    timeout: 30s
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 300s
+
+  # OpenObserve exporter for metrics  
+  otlphttp/metrics:
+    endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/metrics
+    headers:
+      Authorization: "Basic ${OPENOBSERVE_AUTH}"
+      stream-name: default
+    compression: gzip
+    timeout: 30s
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 300s
+
+  # OpenObserve exporter for logs
+  otlphttp/logs:
+    endpoint: ${OPENOBSERVE_URL}/api/${OPENOBSERVE_ORG}/logs
+    headers:
+      Authorization: "Basic ${OPENOBSERVE_AUTH}"
+      stream-name: default
+    compression: gzip
+    timeout: 30s
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 300s
+
+  # Prometheus exporter to expose metrics
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    namespace: otel
+    const_labels:
+      collector: otel-collector
+
+extensions:
+  # Health check extension
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+  # pprof extension for performance profiling
+  pprof:
+    endpoint: 0.0.0.0:1777
+
+  # zpages extension for collector diagnostics
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+service:
+  extensions: [health_check, pprof, zpages]
+  
+  pipelines:
+    # Traces pipeline
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource, attributes/traces]
+      exporters: [otlphttp/traces, debug]
+    
+    # Metrics pipeline
+    metrics:
+      receivers: [otlp, prometheus]
+      processors: [memory_limiter, batch, resource, attributes/metrics]
+      exporters: [otlphttp/metrics, prometheus, debug]
+    
+    # Logs pipeline
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource]
+      exporters: [otlphttp/logs, debug]
+
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      level: detailed
+      address: 0.0.0.0:8888

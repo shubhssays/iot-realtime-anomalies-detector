@@ -1,0 +1,145 @@
+name: observability-stack
+
+services:
+  # --------------------
+  # OpenObserve - Central Observability Platform
+  # --------------------
+  openobserve:
+    image: public.ecr.aws/zinclabs/openobserve:latest
+    container_name: openobserve
+    ports:
+      - "5080:5080"   # Web UI & API
+    environment:
+      ZO_ROOT_USER_EMAIL: "admin@example.com"
+      ZO_ROOT_USER_PASSWORD: "Admin@123"
+      ZO_DATA_DIR: "/data"
+      ZO_HTTP_PORT: "5080"
+      # Enable all features
+      ZO_TELEMETRY_ENABLED: "false"
+      ZO_FEATURE_PER_THREAD_LOCK: "true"
+      ZO_FEATURE_FULLTEXT_EXTRA_FIELDS: "true"
+    volumes:
+      - openobserve_data:/data
+    networks:
+      - observability-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --------------------
+  # OpenTelemetry Collector
+  # --------------------
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.96.0
+    container_name: otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./config/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+      - "8888:8888"   # Prometheus metrics (collector's own metrics)
+      - "8889:8889"   # Prometheus exporter
+      - "13133:13133" # Health check extension
+    depends_on:
+      openobserve:
+        condition: service_healthy
+    networks:
+      - observability-network
+    environment:
+      - OPENOBSERVE_URL=http://openobserve:5080
+      - OPENOBSERVE_ORG=default
+      - OPENOBSERVE_USER=admin@example.com
+      - OPENOBSERVE_PASSWORD=Admin@123
+
+  # --------------------
+  # Sample Node.js Application with OpenTelemetry
+  # --------------------
+  nodejs-app:
+    build:
+      context: ./apps/nodejs-sample
+      dockerfile: Dockerfile
+    container_name: nodejs-app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - OTEL_SERVICE_NAME=nodejs-sample-app
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=otlp
+      - OTEL_LOGS_EXPORTER=otlp
+      - OTEL_RESOURCE_ATTRIBUTES=service.name=nodejs-sample-app,service.version=1.0.0,deployment.environment=local
+    depends_on:
+      - otel-collector
+    networks:
+      - observability-network
+
+  # --------------------
+  # Sample Python Application with OpenTelemetry
+  # --------------------
+  python-app:
+    build:
+      context: ./apps/python-sample
+      dockerfile: Dockerfile
+    container_name: python-app
+    ports:
+      - "8000:8000"
+    environment:
+      - OTEL_SERVICE_NAME=python-sample-app
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=otlp
+      - OTEL_LOGS_EXPORTER=otlp
+      - OTEL_RESOURCE_ATTRIBUTES=service.name=python-sample-app,service.version=1.0.0,deployment.environment=local
+      - OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED=true
+    depends_on:
+      - otel-collector
+    networks:
+      - observability-network
+
+  # --------------------
+  # Traffic Generator (for testing)
+  # --------------------
+  traffic-generator:
+    image: curlimages/curl:latest
+    container_name: traffic-generator
+    networks:
+      - observability-network
+    depends_on:
+      - nodejs-app
+      - python-app
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Waiting for apps to be ready..."
+        sleep 15
+        echo "Starting traffic generation..."
+        while true; do
+          # Hit Node.js app
+          curl -s http://nodejs-app:3000/ > /dev/null 2>&1
+          curl -s http://nodejs-app:3000/api/users > /dev/null 2>&1
+          curl -s http://nodejs-app:3000/api/products > /dev/null 2>&1
+          curl -s http://nodejs-app:3000/api/error > /dev/null 2>&1 || true
+          
+          # Hit Python app
+          curl -s http://python-app:8000/ > /dev/null 2>&1
+          curl -s http://python-app:8000/items/1 > /dev/null 2>&1
+          curl -s http://python-app:8000/slow > /dev/null 2>&1
+          curl -s http://python-app:8000/error > /dev/null 2>&1 || true
+          
+          echo "Traffic sent at $(date)"
+          sleep 5
+        done
+
+networks:
+  observability-network:
+    driver: bridge
+
+volumes:
+  openobserve_data:
+    driver: local

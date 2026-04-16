@@ -51,8 +51,8 @@ services:
     environment:
       - OPENOBSERVE_URL=http://openobserve:5080
       - OPENOBSERVE_ORG=default
-      - OPENOBSERVE_USER=admin@example.com
-      - OPENOBSERVE_PASSWORD=Admin@123
+      # Note: Authentication is hardcoded in otel-collector-config.yaml
+      # Base64 of "admin@example.com:Admin@123" = YWRtaW5AZXhhbXBsZS5jb206QWRtaW5AMTIz
 
   # --------------------
   # Sample Node.js Application with OpenTelemetry

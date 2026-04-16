@@ -267,6 +267,38 @@ yarn purge
 yarn setup
 ```
 
+## 📊 Observability Stack (New!)
+
+We've added a complete local observability stack using **OpenObserve** with Docker! Monitor your applications with logs, metrics, and distributed traces.
+
+### Quick Start
+
+```bash
+cd observability
+./setup.sh
+```
+
+Then open http://localhost:5080 and login with:
+- **Email**: `admin@example.com`
+- **Password**: `Admin@123`
+
+### Features
+
+✅ **Complete Observability**: Logs, metrics, and traces in one place  
+✅ **OpenTelemetry Integration**: Industry-standard instrumentation  
+✅ **Sample Applications**: Node.js and Python apps with full instrumentation  
+✅ **Auto-Instrumentation**: Minimal code changes required  
+✅ **Production-Ready**: Based on CNCF standards  
+
+### Documentation
+
+- [📖 Complete Guide](observability/README.md) - Comprehensive setup and usage
+- [🏗️ Architecture](observability/ARCHITECTURE.md) - Detailed architecture diagrams
+- [🔧 Troubleshooting](observability/TROUBLESHOOTING.md) - Common issues and solutions
+- [⚡ Quick Reference](observability/QUICK_REFERENCE.md) - Commands and queries
+
+---
+
 ## License
 
 MIT

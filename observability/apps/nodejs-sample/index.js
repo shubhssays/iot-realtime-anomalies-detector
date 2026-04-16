@@ -1,9 +1,49 @@
 const express = require('express');
 const { trace, context, metrics, SpanStatusCode } = require('@opentelemetry/api');
+const { logs } = require('@opentelemetry/api-logs');
 const pino = require('pino');
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Get OpenTelemetry logger
+const otelLogger = logs.getLogger('nodejs-sample-app', '1.0.0');
+
+// Create a custom Pino transport that also sends to OpenTelemetry
+const pinoOtelTransport = {
+  write: function(msg) {
+    try {
+      const log = JSON.parse(msg);
+      const severityMap = {
+        10: 'TRACE',
+        20: 'DEBUG', 
+        30: 'INFO',
+        40: 'WARN',
+        50: 'ERROR',
+        60: 'FATAL'
+      };
+      
+      otelLogger.emit({
+        severityText: severityMap[log.level] || 'INFO',
+        severityNumber: log.level,
+        body: log.msg || JSON.stringify(log),
+        attributes: {
+          ...log,
+          'log.source': 'nodejs-app'
+        }
+      });
+    } catch (e) {
+      // If parsing fails, just send the raw message
+      otelLogger.emit({
+        severityText: 'INFO',
+        body: msg,
+        attributes: { 'log.source': 'nodejs-app' }
+      });
+    }
+    // Also write to stdout for docker logs
+    process.stdout.write(msg);
+  }
+};
 
 // Create a logger
 const logger = pino({
@@ -13,7 +53,7 @@ const logger = pino({
       return { level: label.toUpperCase() };
     },
   },
-});
+}, pinoOtelTransport);
 
 // Get tracer and meter
 const tracer = trace.getTracer('nodejs-sample-app', '1.0.0');

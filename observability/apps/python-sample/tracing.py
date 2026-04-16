@@ -5,6 +5,9 @@ This module configures OpenTelemetry SDK with OTLP exporters
 import logging
 import os
 from opentelemetry import trace, metrics
+from opentelemetry._logs import set_logger_provider
+from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
+from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk.metrics import MeterProvider
@@ -12,15 +15,8 @@ from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 from opentelemetry.sdk.resources import Resource, SERVICE_NAME, SERVICE_VERSION, DEPLOYMENT_ENVIRONMENT
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
+from opentelemetry.exporter.otlp.proto.http._log_exporter import OTLPLogExporter
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.instrumentation.logging import LoggingInstrumentor
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 # Get configuration from environment
 service_name = os.getenv('OTEL_SERVICE_NAME', 'python-sample-app')
@@ -56,9 +52,25 @@ meter_provider = MeterProvider(
 )
 metrics.set_meter_provider(meter_provider)
 
-# Instrument logging
-LoggingInstrumentor().instrument(set_logging_format=True)
+# Configure logs provider
+logger_provider = LoggerProvider(resource=resource)
+log_exporter = OTLPLogExporter(
+    endpoint=f"{otlp_endpoint}/v1/logs",
+)
+logger_provider.add_log_record_processor(BatchLogRecordProcessor(log_exporter))
+set_logger_provider(logger_provider)
 
+# Configure standard logging to send to OpenTelemetry
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+# Add OpenTelemetry handler to root logger
+handler = LoggingHandler(level=logging.NOTSET, logger_provider=logger_provider)
+logging.getLogger().addHandler(handler)
+
+logger = logging.getLogger(__name__)
 logger.info(f"OpenTelemetry SDK initialized for {service_name}")
 logger.info(f"Exporting to: {otlp_endpoint}")
 

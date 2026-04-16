@@ -44,7 +44,7 @@ echo "--------------------------------------"
 
 check_service() {
     local service=$1
-    local status=$(docker compose ps --filter "name=$service" --format "{{.State}}" 2>/dev/null | head -1)
+    local status=$(docker compose ps --filter "service=$service" --format "{{.State}}" 2>/dev/null | head -1)
     
     if [ "$status" == "running" ]; then
         echo -e "${GREEN}✓${NC} $service is running"

@@ -1,0 +1,44 @@
+# Environment files
+.env
+
+# Docker volumes
+data/
+
+# Logs
+*.log
+logs/
+all-logs*.txt
+
+# Backups
+*.tar.gz
+backup/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
